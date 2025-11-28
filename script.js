@@ -6,7 +6,7 @@ let BASE_URL;
 // Cek mode operasi (Lokal vs. Produksi)
 if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1" || window.location.protocol === "file:") {
     // Mode Lokal: Sesuaikan dengan PORT di index.js (sekarang 5000)
-    BASE_URL = "http://localhost:5000";
+    BASE_URL = "https://backend-leaflet.vercel.app/";
     console.log(`Mode Lokal: Menggunakan BASE_URL: ${BASE_URL}`);
 } else {
     // Mode Produksi: GANTI placeholder ini dengan URL deployment backend Anda!
