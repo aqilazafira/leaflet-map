@@ -5,13 +5,13 @@ let BASE_URL;
 
 // Cek mode operasi (Lokal vs. Produksi)
 if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1" || window.location.protocol === "file:") {
-    // Mode Lokal: Sesuaikan dengan PORT di server.js (sekarang 3000)
-    BASE_URL = "http://localhost:3000"; 
+    // Mode Lokal: Sesuaikan dengan PORT di index.js (sekarang 5000)
+    BASE_URL = "http://localhost:5000";
     console.log(`Mode Lokal: Menggunakan BASE_URL: ${BASE_URL}`);
 } else {
     // Mode Produksi: GANTI placeholder ini dengan URL deployment backend Anda!
     // Jika Anda deploy backend Anda ke Render/Heroku/Vercel/dll., masukkan URL tersebut di sini.
-    BASE_URL = "https://your-backend-app.onrender.com"; 
+    BASE_URL = "https://your-backend-app.onrender.com";
     console.log(`Mode Produksi: Gunakan URL Backend yang sudah di-deploy: ${BASE_URL}`);
 }
 // --- Akhir penentuan BASE_URL ---
@@ -33,25 +33,25 @@ L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
 // ===============================
 function fetchLocations() {
     fetch(`${BASE_URL}/api/locations`)
-      .then(res => {
-          if (!res.ok) {
-              throw new Error(`HTTP error! status: ${res.status}`);
-          }
-          return res.json();
-      })
-      .then(data => {
-          // Hapus semua marker yang sudah ada sebelum menambahkan yang baru
-          map.eachLayer(layer => {
-              if (layer instanceof L.Marker) {
-                  map.removeLayer(layer);
-              }
-          });
+        .then(res => {
+            if (!res.ok) {
+                throw new Error(`HTTP error! status: ${res.status}`);
+            }
+            return res.json();
+        })
+        .then(data => {
+            // Hapus semua marker yang sudah ada sebelum menambahkan yang baru
+            map.eachLayer(layer => {
+                if (layer instanceof L.Marker) {
+                    map.removeLayer(layer);
+                }
+            });
 
-          data.forEach(m => {
-              // Menggunakan nama properti baru: latitude, longitude, nama, deskripsi
-              L.marker([m.latitude, m.longitude])
-                .addTo(map)
-                .bindPopup(`
+            data.forEach(m => {
+                // Menggunakan nama properti baru: latitude, longitude, nama, deskripsi
+                L.marker([m.latitude, m.longitude])
+                    .addTo(map)
+                    .bindPopup(`
                     <b>${m.nama}</b> (${m.kategori})<br>
                     ${m.deskripsi}<br><br>
                     <!-- Menggunakan _id MongoDB untuk identifikasi -->
@@ -62,9 +62,9 @@ function fetchLocations() {
                         Hapus Lokasi
                     </button> 
                 `);
-          });
-      })
-      .catch(error => console.error('Gagal mengambil lokasi:', error));
+            });
+        })
+        .catch(error => console.error('Gagal mengambil lokasi:', error));
 }
 
 // Panggil saat aplikasi dimuat
@@ -75,7 +75,7 @@ fetchLocations();
 // 2. TAMBAH LOKASI KE DATABASE (CREATE)
 // Panggilan ke: POST /api/locations (MENGGUNAKAN JSON)
 // ===============================
-map.on("click", function(e) {
+map.on("click", function (e) {
     let nama = prompt("Nama Lokasi:");
     if (!nama) return;
 
@@ -84,7 +84,7 @@ map.on("click", function(e) {
 
     let kategori = prompt("Kategori Lokasi (cth: Wisata, Kuliner, Sekolah):");
     if (!kategori) return;
-    
+
     const newLocation = {
         nama: nama,
         deskripsi: deskripsi,
@@ -96,18 +96,21 @@ map.on("click", function(e) {
     fetch(`${BASE_URL}/api/locations`, {
         method: "POST",
         headers: {
-            // Penting: Menggunakan JSON sesuai dengan konfigurasi backend (app.use(express.json()))
             "Content-Type": "application/json"
         },
         body: JSON.stringify(newLocation)
     })
-    .then(res => res.json())
-    .then(result => {
-        // Asumsi backend mengembalikan lokasi yang baru disimpan
-        alert(`Lokasi '${result.nama}' berhasil ditambahkan!`);
-        fetchLocations(); // Muat ulang marker
-    })
-    .catch(error => console.error('Error saat menambah lokasi:', error));
+        .then(res => res.json())
+        .then(result => {
+            console.log('Response dari backend:', result); // Untuk debugging
+            // Gunakan variabel nama yang sudah diinput, bukan dari result
+            alert(`Lokasi '${nama}' berhasil ditambahkan!`);
+            fetchLocations(); // Muat ulang marker
+        })
+        .catch(error => {
+            console.error('Error saat menambah lokasi:', error);
+            alert('Gagal menambahkan lokasi!');
+        });
 });
 
 
@@ -122,11 +125,11 @@ function deleteLocation(id) {
         method: "DELETE"
         // Tidak perlu body karena ID dikirim melalui URL
     })
-    .then(res => res.json())
-    .then(result => {
-        // Asumsi backend mengembalikan pesan sukses
-        alert(result.message);
-        fetchLocations(); // Muat ulang marker
-    })
-    .catch(error => console.error('Error saat menghapus lokasi:', error));
+        .then(res => res.json())
+        .then(result => {
+            // Asumsi backend mengembalikan pesan sukses
+            alert(result.message);
+            fetchLocations(); // Muat ulang marker
+        })
+        .catch(error => console.error('Error saat menghapus lokasi:', error));
 }
